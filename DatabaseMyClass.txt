@@ -1,0 +1,106 @@
+
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+
+
+public class DataBaseMyClass {
+	Connection con = null;
+	private String url = "jdbc:postgresql://localhost:5432/DatabaseSchedule";
+	private String user = "postgres";
+	private String password = "1648";
+
+	public DataBaseMyClass() {
+		try {
+			Class.forName("org.postgresql.Driver");
+			System.out.println("driver loaded");
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+		
+		try {
+			con = DriverManager.getConnection(url, user, password);
+			
+			System.out.println("connection succesful");
+		} catch (SQLException e) {
+			//LOGGER.debug(e.getMessage().toString(), e);
+			e.printStackTrace();
+		}
+	}
+	public Connection getCon() {
+		return con;
+	}
+	
+	public ResultSet Select(String query){
+		Statement st = null;
+		try {
+			 st = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
+		
+		try {
+			return st.executeQuery(query);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			//LOGGER.debug(e.getMessage(), e);
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	public void insertBank(String num_tel_director, String fio_director, String num_tel_buhgalter, String fio_buhgalter, String uir_name_bank){
+		Statement st;
+		int upd_cnt = 0;
+		String query = "INSERT INTO \"DatabaseSchedule\" (Name, Place, Date,) VALUES ("
+				+ f1(Name) + ", " + f1(Place) + ", " + f1(Date) + ")";
+		try {
+			if(Name.length()!=0 && Place.length()!=0 && Date.length()!=0 ){
+			st = con.createStatement();
+			upd_cnt = st.executeUpdate(query);
+			st.close();
+			}else{
+				System.out.println("error");
+			}
+		} catch (SQLException e) {
+			System.out.println("already exist");
+		}
+	}
+	
+		
+	public ArrayList<DatabaseSchedule> getBankList(){
+		String query = "SELECT * FROM \"DatabaseSchedule\"";
+		Statement st = null;
+		ResultSet rs = null;
+		ArrayList<DatabaseSchedule> list = new ArrayList<DatabaseSchedule>();
+		try {
+			st = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+			rs = st.executeQuery(query);
+			//rs.first();
+			while(rs.next()){
+				Bank b = new Bank();
+				b.setUirNameBank(rs.getString("Name"));
+				b.setFioBuhgalter(rs.getString("Place"));
+				b.setFioDirector(rs.getString("Date"));
+				list.add(b);
+			}
+			rs.close();
+			st.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
+		return list;
+	}
+	
+	private String f1(String str){
+		return "'" + str + "'";
+	}
+}
